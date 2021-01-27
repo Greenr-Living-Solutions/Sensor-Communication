@@ -12,12 +12,14 @@ int port = 8080;
 WiFiClient wifi;
 WebSocketClient client = WebSocketClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
-   
+
+DHT sensor(7, DHT11);
+
 void setup() {
-    
-//  sensor.begin(9600);
+
+  sensor.begin(9600);
   Serial.begin(9600);
-  
+
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to Network named: ");
     Serial.println(ssid);                   // print the network name (SSID);
@@ -35,37 +37,54 @@ void setup() {
   Serial.print("IP Address: ");
   Serial.println(ip);
 
-  client.begin();
 }
 
 void loop() {
-  
-  int sound = digitalRead(7);
-  
-// DHT sensor(2, DHT11);
-//float temperature = sensor.readTemperature();
-//float humidity = sensor.readHumidity();
 
-  
-  if ( (millis() % 2000) == 0 ) {
+  client.begin();
 
-    client.beginMessage(TYPE_TEXT); 
-    client.print(millis());
-    client.print(",");
-    client.println(sound);
-    client.endMessage();
-    
-    delay(100);
-  }
+  while (client.connected()) {
+
+  int sound = digitalRead(2);
+
+  int temperature = sensor.readTemperature();
+  int humidity = sensor.readHumidity();
 
   if (sound == 1) {
-
-    client.beginMessage(TYPE_TEXT);   
-    client.print(millis());
-    client.print(",");
-    client.println(sound);
-    client.endMessage();
     
+    client.beginMessage(TYPE_TEXT);
+    client.print(millis());
+    client.print(" ");
+    client.print(sound);
+    client.print(" ");
+    client.print(temperature);
+    client.print(" ");
+    client.print(humidity);
+    client.endMessage();
+
     delay(500);
   }
+
+  if (millis() % 1000 == 0) {
+
+    client.beginMessage(TYPE_TEXT);
+    client.print(millis());
+    client.print(" ");
+    client.print(sound);
+    client.print(" ");
+    client.print(temperature);
+    client.print(" ");
+    client.print(humidity);
+    client.endMessage();
+
+    delay(200);
+
+  }
+
+  }
+
+  Serial.println("Disconnected from server. Reconnecting...");
+
+  client.isFinal();
+
 }
