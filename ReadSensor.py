@@ -1,3 +1,7 @@
+# This version is outdated
+
+
+
 import serial
 
 arduino_port = "/dev/cu.usbmodem142301"
